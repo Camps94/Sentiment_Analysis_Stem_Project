@@ -146,7 +146,7 @@ if __name__ == "__main__":
         auth = tweepy.OAuthHandler(cons_tok, cons_sec)
         auth.set_access_token(app_tok, app_sec)
 
-        twitter_stream = Stream(auth, twitter_listener(50))
+        twitter_stream = Stream(auth, twitter_listener(100))
         twitter_stream.filter(track = [search_word] , languages = ['es'])
 
         try:
@@ -158,7 +158,3 @@ if __name__ == "__main__":
         finally:
             conn.close()
             subprocess.call(['sqlite_web', 'twit_data.db'])
-
-
-
-
