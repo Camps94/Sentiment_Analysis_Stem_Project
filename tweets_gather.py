@@ -8,9 +8,15 @@ from tweepy import Stream
 import json
 import sqlite3
 from local_config import *
-from implementation import *
+#from implementation import *
 import itertools
 import subprocess
+import pickle
+from nltk import word_tokenize
+from nltk.stem import SnowballStemmer
+import re
+
+
 ########################################
 
 parser = argparse.ArgumentParser(description='Look for the data with the Twitter API')
@@ -23,9 +29,43 @@ db = "twit_data.db"
 conn = sqlite3.connect(db)
 c = conn.cursor()
 
-subprocess.call(['sqlite_web', 'twit_data.db'])
+########################################
+
+f = open('my_classifier.pickle', 'rb')
+classifier = pickle.load(f)
+f.close()
+
+########################################
+non_words =[]
+#non_words = list(punctuation)
+non_words.extend(['¿', '¡', ':'])
+non_words.extend(map(str,range(10)))
+
+snowball_stemmer = SnowballStemmer('spanish')
+
+def create_word_features(words):
+
+    useful_words = [ snowball_stemmer.stem(word.lower()) for word in words if word not in non_words]
+    my_dict = dict([(word, True) for word in useful_words])
+    return my_dict
 
 
+########################################
+
+def cleaning_tweets(tweet):
+
+    tweet = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet)
+    tweet = re.sub(r'@[A-Za-z0-9]+', '', tweet)
+    tweet = re.sub(r'#\w+ ?', '', tweet)
+    tweet = re.sub(r'_\w+ ?', '', tweet)
+    tweet = re.sub(r'\([^)]*\)', '', tweet)
+    tweet = re.sub(r'!', '', tweet)
+    tweet = re.sub(r'www\.\S+\.com', '', tweet)
+
+
+    return tweet
+
+########################################
 class twitter_listener(StreamListener):
 
     def __init__(self, num_tweets_max):
@@ -117,3 +157,8 @@ if __name__ == "__main__":
 
         finally:
             conn.close()
+            subprocess.call(['sqlite_web', 'twit_data.db'])
+
+
+
+

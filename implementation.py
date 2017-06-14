@@ -11,6 +11,8 @@ from nltk.stem import SnowballStemmer
 from nltk import word_tokenize
 import itertools
 from random import shuffle
+import pickle
+
 
 ######################################################################################################
 
@@ -42,7 +44,6 @@ for (words, sentiment) in tweets_corpus_COST:
     words_filtered =[]
 
     for e in word_tokenize(words):
-
         if (len(e)>=3 and e not in spanish_stopwords):
             words_filtered.append(''.join(ch for ch, _ in itertools.groupby(e)))
 
@@ -58,6 +59,8 @@ for (words, sentiment) in tweets_corpus_COST:
         words = words_filtered
         neg_tweets.append((create_word_features(words), 'Negative'))
 
+print(len(pos_tweets))
+print(len(neg_tweets))
 
 train_set = pos_tweets + neg_tweets
 
@@ -97,7 +100,8 @@ for (words, sentiment) in tweets_corpus_TASS:
         words = words_filtered
         none_tweets.append((create_word_features(words), "None"))
 
-
+print(len(pos_tweets))
+print(len(neg_tweets))
 
 test_set = pos_tweets + neg_tweets
 
@@ -109,9 +113,9 @@ print ('train on %d instances, test on %d instances' % (len(train_set), len(test
 ######################################################################################################
 
 
-classifier = MaxentClassifier.train(train_set, max_iter=30)
+#classifier = MaxentClassifier.train(train_set, max_iter=30)
 
-#classifier = NaiveBayesClassifier.train(train_set)
+classifier = NaiveBayesClassifier.train(train_set)
 accuracy = nltk.classify.util.accuracy(classifier, test_set)
 
 print(accuracy * 100)
@@ -138,7 +142,6 @@ indicador = {'pos_precision': scores.precision(refsets['Positive'], testsets['Po
 
 #print ('pos precision:', scores.precision(refsets['Positive'], testsets['Positive']))
 print ('pos precision:', indicador['pos_precision'])
-
 print ('pos recall:', scores.recall(refsets['Positive'], testsets['Positive']))
 print ('pos F-measure:', scores.f_measure(refsets['Positive'], testsets['Positive']))
 print ('neg precision:', scores.precision(refsets['Negative'], testsets['Negative']))
@@ -163,3 +166,20 @@ def cleaning_tweets(tweet):
 
 
     return tweet
+
+######################################################################################################
+
+f = open('my_classifier.pickle', 'wb')
+pickle.dump(classifier, f)
+f.close()
+
+######################################################################################################
+
+
+
+
+
+
+
+
+
