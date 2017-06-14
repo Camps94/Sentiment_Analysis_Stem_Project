@@ -10,7 +10,7 @@ import sqlite3
 from local_config import *
 from implementation import *
 import itertools
-
+import subprocess
 ########################################
 
 parser = argparse.ArgumentParser(description='Look for the data with the Twitter API')
@@ -22,6 +22,8 @@ search_word = sys.argv[1]
 db = "twit_data.db"
 conn = sqlite3.connect(db)
 c = conn.cursor()
+
+subprocess.call(['sqlite_web', 'twit_data.db'])
 
 
 class twitter_listener(StreamListener):
@@ -75,7 +77,7 @@ class twitter_listener(StreamListener):
                 content_pos.append(''.join(ch for ch, _ in itertools.groupby(word)))
 
             words = create_word_features(content_pos)
-            polarity = naive_classifier.classify(words)
+            polarity = classifier.classify(words)
 
 
             c.execute('INSERT INTO BaseTweets(tweet_id, User, Created_at, content, Polarity) VALUES(?,?,?,?,?)', (tweet_id, user, created, content_prev, polarity))
